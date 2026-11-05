@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TecSalto 2026: Salud y Adolescencia Digital</title>
+<meta name="description" content="Proyecto educativo sobre salud y adolescencia en la era digital, con test interactivo de dependencia digital.">
+
+<!-- Tipografías de Google Fonts (si no cargan, se usan las de respaldo) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   1. VARIABLES DE COLOR (acá podés cambiar la paleta entera)
+   ========================================================= */
+:root {
+  --bg: #f2f7f6;          /* fondo general */
+  --surface: #ffffff;     /* tarjetas */
+  --ink: #12302f;         /* texto principal */
+  --ink-soft: #4b6564;    /* texto secundario */
+  --line: #d3e2e0;        /* bordes */
+  --primary: #0e7c7b;     /* verde azulado */
+  --primary-ink: #ffffff; /* texto sobre el color primario */
+  --night: #1f2a5a;       /* azul noche (sección final) */
+  --low: #2e9e6b;         /* nivel bajo */
+  --mid: #e0a526;         /* nivel moderado */
+  --high: #d24c4c;        /* nivel alto */
+  --radius: 14px;
+  --font-title: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+  --font-body: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+/* Modo oscuro: se activa con el botón o según el sistema */
+:root[data-theme="dark"] {
+  --bg: #0d1b1b; --surface: #142827; --ink: #e6f2f0; --ink-soft: #9cb8b5;
+  --line: #254240; --primary: #3cc4bf; --primary-ink: #082221; --night: #0a1030;
+}
+
+/* =========================================================
+   2. ESTILOS BASE
+   ========================================================= */
+* { box-sizing: border-box; margin: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body); font-size: 1.05rem; line-height: 1.65;
+  background: var(--bg); color: var(--ink);
+  transition: background .3s, color .3s;
+}
+h1, h2, h3 { font-family: var(--font-title); line-height: 1.15; }
+h2 { font-size: clamp(1.7rem, 4vw, 2.3rem); margin-bottom: .6rem; }
+p { max-width: 62ch; }
+a { color: var(--primary); }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.wrap { width: min(1080px, 92%); margin-inline: auto; }
+section { padding: 4rem 0; }
+.lead { color: var(--ink-soft); margin-bottom: 1.8rem; }
+
+/* Botones */
+.btn {
+  font: 700 1rem var(--font-body); cursor: pointer; border: 0;
+  padding: .85rem 1.5rem; border-radius: 999px;
+  background: var(--primary); color: var(--primary-ink);
+  text-decoration: none; display: inline-block;
+  transition: transform .15s, opacity .2s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+
+/* =========================================================
+   3. BARRA SUPERIOR
+   ========================================================= */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; justify-content: space-between; align-items: center; padding: .7rem 0; gap: 1rem; }
+.topbar nav { display: flex; gap: 1.2rem; flex-wrap: wrap; font-weight: 700; font-size: .95rem; }
+.topbar nav a { color: var(--ink); text-decoration: none; }
+.topbar nav a:hover { color: var(--primary); }
+#themeBtn { padding: .45rem .9rem; font-size: .9rem; }
+
+/* =========================================================
+   4. ENCABEZADO (HERO)
+   ========================================================= */
+.hero { padding: 4.5rem 0 3.5rem; }
+.hero .wrap { display: grid; grid-template-columns: 1.3fr 1fr; gap: 3rem; align-items: center; }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 800; letter-spacing: -.02em; }
+.hero .sub { font-size: 1.25rem; color: var(--primary); font-weight: 700; margin: .8rem 0 1rem; }
+.hero .btns { display: flex; gap: .8rem; flex-wrap: wrap; margin-top: 1.6rem; }
+
+/* Celular decorativo con "pantalla" que muestra horas de uso */
+.phone {
+  justify-self: center; width: 210px; aspect-ratio: 9/17; border-radius: 30px;
+  background: var(--night); padding: 14px; box-shadow: 0 20px 40px rgba(0,0,0,.2);
+}
+.screen { height: 100%; border-radius: 20px; background: #0f1740; color: #fff; padding: 1.1rem .9rem; display: flex; flex-direction: column; gap: .7rem; }
+.screen small { color: #9fb0e8; }
+.screen strong { font: 800 2.1rem var(--font-title); }
+.bar { height: 10px; border-radius: 6px; background: #26336e; overflow: hidden; }
+.bar i { display: block; height: 100%; background: #3cc4bf; border-radius: 6px; }
+.screen .warn { margin-top: auto; background: #26336e; border-radius: 12px; padding: .7rem; font-size: .85rem; }
+
+/* =========================================================
+   5. TARJETAS INFORMATIVAS (acordeones con <details>)
+   ========================================================= */
+.cards { display: grid; gap: .9rem; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+summary {
+  cursor: pointer; list-style: none; padding: 1.1rem 1.3rem;
+  font: 700 1.2rem var(--font-title); display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font-size: 1.6rem; color: var(--primary); transition: transform .25s; }
+details[open] summary::after { transform: rotate(45deg); }
+details .body { padding: 0 1.3rem 1.3rem; color: var(--ink-soft); }
+details .body ul { padding-left: 1.2rem; margin-top: .6rem; }
+details .body li { margin-bottom: .3rem; }
+
+/* =========================================================
+   6. TEST INTERACTIVO
+   ========================================================= */
+#test { background: var(--surface); border-block: 1px solid var(--line); }
+.quiz { max-width: 720px; margin-inline: auto; }
+.screen-box { display: none; }
+.screen-box.active { display: block; animation: fade .35s; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.progress { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; margin-bottom: .5rem; }
+.progress i { display: block; height: 100%; width: 0; background: var(--primary); transition: width .35s; }
+.counter { color: var(--ink-soft); font-size: .9rem; margin-bottom: 1rem; }
+.q-text { font: 800 clamp(1.4rem, 3.5vw, 1.9rem) var(--font-title); margin-bottom: 1.2rem; }
+.options { display: grid; gap: .7rem; }
+.option {
+  text-align: left; font: 600 1.05rem var(--font-body); color: var(--ink);
+  background: var(--bg); border: 2px solid var(--line); border-radius: var(--radius);
+  padding: 1rem 1.2rem; cursor: pointer; transition: border-color .2s, transform .15s, background .2s;
+}
+.option:hover { border-color: var(--primary); transform: translateX(4px); }
+.option.selected { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 15%, var(--bg)); }
+.quiz-nav { margin-top: 1.3rem; display: flex; justify-content: space-between; }
+.start-box p { margin-bottom: 1.5rem; }
+.small { font-size: .88rem; color: var(--ink-soft); margin-top: 1.2rem; }
+
+/* Resultado: batería que se llena según el puntaje */
+.battery { display: flex; align-items: center; margin: 1.2rem 0; }
+.battery .shell { flex: 1; max-width: 340px; height: 56px; border: 4px solid var(--ink); border-radius: 14px; padding: 4px; }
+.battery .fill { height: 100%; width: 0; border-radius: 8px; background: var(--level, var(--low)); transition: width 1.1s ease; }
+.battery .tip { width: 8px; height: 22px; background: var(--ink); border-radius: 0 4px 4px 0; }
+.battery .pct { margin-left: 1rem; font: 800 1.6rem var(--font-title); }
+.level-title { font: 800 clamp(1.6rem, 4vw, 2.2rem) var(--font-title); color: var(--level, var(--low)); }
+.tips { margin: 1.2rem 0 1.6rem; padding-left: 1.2rem; }
+.tips li { margin-bottom: .55rem; }
+
+/* =========================================================
+   7. REFLEXIÓN FINAL
+   ========================================================= */
+.reflexion { background: var(--night); color: #fff; text-align: center; padding: 5rem 0; }
+.reflexion blockquote { font: 800 clamp(1.6rem, 4.5vw, 2.8rem) var(--font-title); max-width: 24ch; margin-inline: auto; line-height: 1.2; }
+.reflexion p { margin: 1.5rem auto 0; color: #b4c0f0; }
+
+footer { padding: 2rem 0; text-align: center; color: var(--ink-soft); font-size: .92rem; }
+footer p { margin-inline: auto; }
+
+/* =========================================================
+   8. RESPONSIVE (celulares) y accesibilidad
+   ========================================================= */
+@media (max-width: 760px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .phone { width: 170px; }
+  section { padding: 3rem 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ============ BARRA SUPERIOR ============ -->
+<header class="topbar">
+  <div class="wrap">
+    <nav aria-label="Secciones">
+      <a href="#info">Contenidos</a>
+      <a href="#test">Test</a>
+      <a href="#reflexion">Reflexión</a>
+    </nav>
+    <button class="btn ghost" id="themeBtn" aria-label="Cambiar entre modo claro y oscuro">Modo oscuro</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ ENCABEZADO ============ -->
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <h1>TecSalto 2026: Salud y Adolescencia Digital</h1>
+      <p class="sub">Cómo usar la tecnología sin que ella use nuestro bienestar.</p>
+      <p>Pasamos horas frente a las pantallas y casi nunca nos preguntamos qué efecto tienen en el sueño, el ánimo y el cuerpo. Acá encontrás información clara y un test para revisar tus propios hábitos.</p>
+      <div class="btns">
+        <a class="btn" href="#test">Hacer el test</a>
+        <a class="btn ghost" href="#info">Leer los contenidos</a>
+      </div>
+    </div>
+    <!-- Celular decorativo -->
+    <div class="phone" aria-hidden="true">
+      <div class="screen">
+        <small>Tiempo en pantalla hoy</small>
+        <strong>6 h 42 min</strong>
+        <div class="bar"><i style="width:78%"></i></div>
+        <div class="bar"><i style="width:45%"></i></div>
+        <div class="bar"><i style="width:22%"></i></div>
+        <div class="warn">¿Y si hoy hacés una pausa?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SECCIÓN INFORMATIVA ============ -->
+<section id="info">
+  <div class="wrap">
+    <h2>Lo que tenés que saber</h2>
+    <p class="lead">Tocá cada tema para leer el resumen.</p>
+
+    <div class="cards">
+      <details>
+        <summary>Adicciones digitales</summary>
+        <div class="body">
+          <p>Hablamos de uso problemático cuando el celular, los videojuegos o las redes sociales se vuelven difíciles de dejar y empiezan a afectar el estudio, el sueño o los vínculos.</p>
+          <ul>
+            <li>Señales: perder la noción del tiempo, irritarse al no poder conectarse, mentir sobre las horas de uso.</li>
+            <li>Muchas apps usan notificaciones, scroll infinito y recompensas para retener la atención.</li>
+            <li>No es lo mismo usar mucho que depender: lo importante es si podés parar cuando querés.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>Higiene del sueño</summary>
+        <div class="body">
+          <p>Las personas adolescentes necesitan entre 8 y 10 horas de sueño por noche. La luz de las pantallas y el contenido que nos mantiene alertas hacen que cueste más dormirse.</p>
+          <ul>
+            <li>Dejá el celular fuera de la cama o en modo "No molestar".</li>
+            <li>Evitá pantallas durante la hora previa a dormir.</li>
+            <li>Mantené horarios parecidos todos los días.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>Ansiedad</summary>
+        <div class="body">
+          <p>La comparación constante en redes, el miedo a perderse algo (FOMO) y la necesidad de responder rápido pueden aumentar la ansiedad y la sensación de presión.</p>
+          <ul>
+            <li>Las redes muestran momentos seleccionados, no la vida completa de nadie.</li>
+            <li>Silenciar notificaciones y limitar la cantidad de cuentas que seguís ayuda a bajar la tensión.</li>
+            <li>Hablar con alguien de confianza siempre es una buena opción.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>Sedentarismo</summary>
+        <div class="body">
+          <p>Pasar muchas horas sentado frente a una pantalla reduce la actividad física. La Organización Mundial de la Salud recomienda que adolescentes realicen en promedio al menos 60 minutos diarios de actividad física de intensidad moderada a vigorosa.</p>
+          <ul>
+            <li>Hacé pausas activas cada una o dos horas.</li>
+            <li>Caminá, andá en bici o jugá algún deporte con amigos.</li>
+            <li>Mover el cuerpo también mejora el ánimo y el sueño.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>Salud mental en la adolescencia</summary>
+        <div class="body">
+          <p>La adolescencia es una etapa de muchos cambios. El uso de pantallas no es bueno ni malo por sí solo: depende de cuánto, para qué y cómo nos sentimos después de usarlas.</p>
+          <ul>
+            <li>Cuidá tus vínculos reales: conversar cara a cara protege el bienestar emocional.</li>
+            <li>Si te sentís triste o con ansiedad durante varios días, pedí ayuda a un adulto de confianza o a un profesional de la salud.</li>
+            <li>Pedir ayuda es una muestra de fortaleza.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEST INTERACTIVO ============ -->
+<section id="test">
+  <div class="wrap">
+    <div class="quiz">
+      <h2>Test de Dependencia Digital</h2>
+
+      <!-- Pantalla 1: inicio -->
+      <div class="screen-box start-box active" id="screenStart">
+        <p class="lead">Respondé 5 preguntas sobre tus hábitos con las pantallas. Es anónimo: nada se guarda ni se envía.</p>
+        <button class="btn" id="startBtn">Empezar</button>
+        <p class="small">Este test es solo educativo y no reemplaza la opinión de un profesional de la salud.</p>
+      </div>
+
+      <!-- Pantalla 2: preguntas (se completa con JavaScript) -->
+      <div class="screen-box" id="screenQuestion">
+        <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+        <div class="counter" id="counter"></div>
+        <h3 class="q-text" id="qText"></h3>
+        <div class="options" id="options" role="group" aria-labelledby="qText"></div>
+        <div class="quiz-nav">
+          <button class="btn ghost" id="backBtn">Atrás</button>
+        </div>
+      </div>
+
+      <!-- Pantalla 3: resultado -->
+      <div class="screen-box" id="screenResult" aria-live="polite">
+        <p class="counter">Tu resultado</p>
+        <h3 class="level-title" id="levelTitle"></h3>
+        <div class="battery" aria-hidden="true">
+          <div class="shell"><div class="fill" id="fill"></div></div>
+          <div class="tip"></div>
+          <span class="pct" id="pct"></span>
+        </div>
+        <p id="levelText"></p>
+        <h4 style="margin-top:1.4rem;font-family:var(--font-title);font-size:1.2rem">Hábitos de desintoxicación digital</h4>
+        <ul class="tips" id="tips"></ul>
+        <button class="btn" id="restartBtn">Repetir el test</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REFLEXIÓN FINAL ============ -->
+<section class="reflexion" id="reflexion">
+  <div class="wrap">
+    <blockquote>"La tecnología debe ser una herramienta de desarrollo, no una limitación para nuestro bienestar emocional."</blockquote>
+    <p>Gracias por visitar nuestro stand.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>TecSalto 2026 · Salto, Buenos Aires</p>
+</footer>
+
+<script>
+/* =========================================================
+   JAVASCRIPT
+   Parte A: modo claro / oscuro
+   Parte B: test de dependencia digital
+   ========================================================= */
+
+/* ---------- A. MODO OSCURO ---------- */
+const root = document.documentElement;
+const themeBtn = document.getElementById("themeBtn");
+
+// Si el celular o la PC ya usa modo oscuro, lo respetamos
+if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  root.dataset.theme = "dark";
+}
+function updateThemeLabel() {
+  themeBtn.textContent = root.dataset.theme === "dark" ? "Modo claro" : "Modo oscuro";
+}
+themeBtn.addEventListener("click", () => {
+  root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  updateThemeLabel();
+});
+updateThemeLabel();
+
+/* ---------- B. TEST ---------- */
+
+// PREGUNTAS: podés editar textos y opciones.
+// Cada opción tiene un puntaje de 0 (mejor) a 3 (más dependencia).
+const questions = [
+  {
+    text: "¿Cuántas horas por día usás el celular (sin contar el estudio)?",
+    options: [
+      { label: "Menos de 2 horas", points: 0 },
+      { label: "Entre 2 y 4 horas", points: 1 },
+      { label: "Entre 4 y 6 horas", points: 2 },
+      { label: "Más de 6 horas", points: 3 }
+    ]
+  },
+  {
+    text: "¿Usás el celular en la cama antes de dormir?",
+    options: [
+      { label: "Nunca, lo dejo lejos", points: 0 },
+      { label: "A veces, unos minutos", points: 1 },
+      { label: "Casi siempre, hasta que me da sueño", points: 2 },
+      { label: "Siempre, y me cuesta soltarlo aunque sea tarde", points: 3 }
+    ]
+  },
+  {
+    text: "¿Qué sentís cuando te quedás sin batería o sin internet?",
+    options: [
+      { label: "Nada especial, sigo con lo mío", points: 0 },
+      { label: "Un poco de fastidio", points: 1 },
+      { label: "Ansiedad o inquietud", points: 2 },
+      { label: "Mucha angustia o enojo", points: 3 }
+    ]
+  },
+  {
+    text: "¿Con qué frecuencia revisás el celular durante clases, comidas o charlas?",
+    options: [
+      { label: "Casi nunca", points: 0 },
+      { label: "De vez en cuando", points: 1 },
+      { label: "Muchas veces por día", points: 2 },
+      { label: "Casi sin parar", points: 3 }
+    ]
+  },
+  {
+    text: "¿Cuánto tiempo del día lo dedicás a actividades sin pantalla (deporte, salir, hobbies)?",
+    options: [
+      { label: "Mucho, es parte de mi rutina", points: 0 },
+      { label: "Un rato casi todos los días", points: 1 },
+      { label: "Muy poco", points: 2 },
+      { label: "Casi nada", points: 3 }
+    ]
+  }
+];
+
+// RESULTADOS: se elige según el puntaje total (0 a 15)
+const results = {
+  low: {
+    title: "Nivel de dependencia bajo",
+    color: "var(--low)",
+    text: "Tenés un uso equilibrado de la tecnología. Seguí cuidando esos hábitos y compartilos con tus amigos.",
+    tips: [
+      "Mantené el celular fuera de la cama durante la noche.",
+      "Seguí combinando tiempo de pantalla con deporte y salidas.",
+      "Revisá cada tanto cuánto tiempo pasás en cada app."
+    ]
+  },
+  mid: {
+    title: "Nivel de dependencia moderado",
+    color: "var(--mid)",
+    text: "Algunos de tus hábitos digitales podrían estar afectando tu descanso o tu atención. Con pequeños cambios podés mejorar.",
+    tips: [
+      "Dejá de usar pantallas 1 hora antes de dormir.",
+      "Desactivá las notificaciones que no sean importantes.",
+      "Probá comer y estudiar con el celular en otra habitación.",
+      "Fijate un límite diario de tiempo para tus redes."
+    ]
+  },
+  high: {
+    title: "Nivel de dependencia alto",
+    color: "var(--high)",
+    text: "Tu uso de pantallas parece tener un peso grande en tu día. Esto no es una enfermedad ni una culpa: es una señal para empezar a cambiar y pedir apoyo si lo necesitás.",
+    tips: [
+      "Hacé una pausa de pantallas de al menos 2 horas por día.",
+      "Cargá el celular lejos de la cama y usá un despertador común.",
+      "Reemplazá un rato de scroll por una actividad física o un hobby.",
+      "Hablá con tu familia, docentes o un profesional de confianza."
+    ]
+  }
+};
+
+// Referencias a los elementos de la página
+const $ = (id) => document.getElementById(id);
+const screens = { start: $("screenStart"), question: $("screenQuestion"), result: $("screenResult") };
+
+// Estado del test
+let current = 0;                       // pregunta actual
+let answers = [];                      // puntaje elegido en cada pregunta
+
+// Muestra una pantalla y oculta las demás
+function showScreen(name) {
+  Object.values(screens).forEach((s) => s.classList.remove("active"));
+  screens[name].classList.add("active");
+}
+
+// Dibuja la pregunta actual
+function renderQuestion() {
+  const q = questions[current];
+  $("counter").textContent = `Pregunta ${current + 1} de ${questions.length}`;
+  $("progressBar").style.width = `${(current / questions.length) * 100}%`;
+  $("qText").textContent = q.text;
+  $("backBtn").style.visibility = current === 0 ? "hidden" : "visible";
+
+  const box = $("options");
+  box.innerHTML = "";
+  q.options.forEach((opt) => {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    btn.textContent = opt.label;
+    if (answers[current] === opt.points) btn.classList.add("selected");
+    btn.addEventListener("click", () => selectOption(btn, opt.points));
+    box.appendChild(btn);
+  });
+}
+
+// Guarda la respuesta y pasa a la siguiente pregunta
+function selectOption(btn, points) {
+  answers[current] = points;
+  document.querySelectorAll(".option").forEach((b) => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  setTimeout(() => {
+    if (current < questions.length - 1) {
+      current++;
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }, 280);
+}
+
+// Calcula el puntaje y muestra el resultado
+function showResult() {
+  const total = answers.reduce((a, b) => a + b, 0);   // 0 a 15
+  const max = questions.length * 3;
+  const percent = Math.round((total / max) * 100);
+
+  let level = results.low;
+  if (total >= 11) level = results.high;
+  else if (total >= 6) level = results.mid;
+
+  $("levelTitle").textContent = level.title;
+  $("levelText").textContent = level.text;
+  $("pct").textContent = `${percent}%`;
+  $("tips").innerHTML = level.tips.map((t) => `<li>${t}</li>`).join("");
+  screens.result.style.setProperty("--level", level.color);
+
+  showScreen("result");
+  // La batería se llena con una pequeña animación
+  $("fill").style.width = "0";
+  setTimeout(() => { $("fill").style.width = `${Math.max(percent, 6)}%`; }, 80);
+}
+
+// Botones
+$("startBtn").addEventListener("click", () => {
+  current = 0; answers = [];
+  showScreen("question");
+  renderQuestion();
+});
+$("backBtn").addEventListener("click", () => {
+  if (current > 0) { current--; renderQuestion(); }
+});
+$("restartBtn").addEventListener("click", () => showScreen("start"));
+</script>
+</body>
+</html>
